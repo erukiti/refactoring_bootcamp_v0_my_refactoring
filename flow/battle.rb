@@ -1,8 +1,5 @@
 # coding: utf-8
 
-class DeadException < Exception ; end
-class DarkException < Exception ; end
-
 class Character
   attr_reader :life
   attr_reader :defence
@@ -25,14 +22,16 @@ class Character
   def get_damage(damage)
     if @life <= damage
       @life = 0
-      raise DeadException
     else
       @life -= damage
     end
   end
 
+  def dead?
+    @life == 0
+  end
+
   def atack(defencer)
-    raise DarkException if @element == :dark || defencer.element == :dark
     return if @atack <= defencer.defence
 
     damage = @atack - defencer.defence
@@ -51,22 +50,13 @@ class Battle
   end
 
   def start
+    return nil if @first.element == :dark || @second.element == :dark
     loop do
-      begin
-        @first.atack(@second)
-      rescue DeadException
-        return @first
-      rescue DarkException
-        return nil
-      end
+      @first.atack(@second)
+      return @first if @second.dead?
 
-      begin
-        @second.atack(@first)
-      rescue DeadException
-        return @second
-      rescue DarkException
-        return nil
-      end
+      @second.atack(@first)
+      return @second if @first.dead?
 
       @turn += 1
     end
